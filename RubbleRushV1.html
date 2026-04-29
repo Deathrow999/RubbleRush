@@ -1,0 +1,1903 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&display=swap" rel="stylesheet">
+    <title>Rubble Rush V0.5</title>
+    <style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+    }
+    main {
+        margin: 0;
+        padding: 0;
+        font-family: Arial;
+        text-align: center;
+        color: white;
+        background-color: black;
+    }
+    .top {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 40%;
+        height: auto; /* Changed to auto so it doesn't cut off text */
+        padding: 20px; /* Added padding so it's not touching the screen edge */
+        margin: 0;
+        font-family: "Black Ops One", system-ui;
+        background: rgba(0, 0, 0, 0);
+        z-index: 20;
+        font-size: 1.2rem;
+        
+        /* The Flexbox "Magic" to create the column */
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end; /* Pushes everything to the right */
+        text-align: right;     /* Aligns text inside the lines to the right */
+        
+        /* Makes sure the \n from your JS actually creates a new line */
+        white-space: pre-line; 
+    }
+
+    .screen1 {
+        width: 100%;
+        height: 100vh;
+        margin: 0px;
+        padding: 0px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-image: url('https://res.cloudinary.com/dhpahuvxs/image/upload/v1777426597/yuh_sq56bd.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+    .marketplace {
+        width: 100%;
+        min-height: 100vh;
+        margin: 0;
+        padding: 60px 24px 48px;
+        box-sizing: border-box;
+        background-color: #121212;
+        background-image:
+            repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.03) 39px, rgba(255,255,255,0.03) 40px),
+            repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.03) 39px, rgba(255,255,255,0.03) 40px);
+        display: none;
+        flex-direction: column;
+        align-items: center;
+    }
+    .marketplace.is-open {
+        display: flex;
+    }
+    .market-header {
+        text-align: center;
+        margin-bottom: 28px;
+    }
+    .market-header h2 {
+        font-family: "Black Ops One", system-ui;
+        font-size: 2rem;
+        color: #c8a96e;
+        margin: 0 0 4px;
+        text-shadow: 0 0 18px rgba(200, 169, 110, 0.4);
+        letter-spacing: 0.05em;
+    }
+    .market-header p {
+        font-family: Arial, sans-serif;
+        color: #5a4a3a;
+        font-size: 0.85rem;
+        margin: 0;
+        font-style: italic;
+    }
+    .market-section-label {
+        width: 100%;
+        max-width: 900px;
+        font-family: "Black Ops One", system-ui;
+        font-size: 0.75rem;
+        letter-spacing: 0.15em;
+        color: #5a4535;
+        text-transform: uppercase;
+        border-bottom: 1px solid #2a1f16;
+        padding-bottom: 6px;
+        margin: 24px 0 14px;
+    }
+    .market-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 14px;
+        width: 100%;
+        max-width: 900px;
+    }
+    .shop-card {
+        background: linear-gradient(160deg, #1a1208, #0f0d08);
+        border: 1px solid #3a2a1a;
+        border-radius: 6px;
+        padding: 16px 12px 14px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+        box-shadow: inset 0 1px 0 rgba(255,220,120,0.04);
+        position: relative;
+        overflow: hidden;
+    }
+    .shop-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at 50% 0%, rgba(200,169,110,0.07), transparent 70%);
+        pointer-events: none;
+    }
+    .shop-card:hover {
+        border-color: #7a5a30;
+        box-shadow: 0 0 14px rgba(180,130,60,0.15), inset 0 1px 0 rgba(255,220,120,0.08);
+        transform: translateY(-2px);
+    }
+    .shop-card:active {
+        transform: scale(0.97);
+    }
+    .shop-card.locked {
+        opacity: 0.35;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+    .shop-card.bought {
+        color: black;
+        opacity: 0.1;
+        cursor: not-allowed;
+    }
+    .shop-card-icon {
+        font-size: 2rem;
+        line-height: 1;
+    }
+    .shop-card-name {
+        font-family: "Black Ops One", system-ui;
+        font-size: 0.72rem;
+        color: #c8a96e;
+        text-align: center;
+        letter-spacing: 0.04em;
+        line-height: 1.3;
+    }
+    .shop-card-cost {
+        font-family: Arial, sans-serif;
+        font-size: 0.68rem;
+        color: #6a5a40;
+        text-align: center;
+        line-height: 1.4;
+    }
+    .shop-card-cost span {
+        color: #8a7050;
+    }
+    .market-back-btn {
+        margin-top: 36px;
+        padding: 12px 36px;
+        font-family: "Black Ops One", system-ui;
+        font-size: 0.9rem;
+        letter-spacing: 0.05em;
+        color: #a08060;
+        background: #0f0d08;
+        border: .05px solid #000000;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+    .market-back-btn:hover {
+        border-color: #4d4d4d;
+        color: #c8a96e;
+    }
+    .coal-mine {
+        position: fixed;
+        inset: 0;
+        margin: 0;
+        padding: 0;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-image: url('https://res.cloudinary.com/dhpahuvxs/image/upload/v1776975671/texture_f0geuq.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        box-sizing: border-box;
+        z-index: 10;
+        filter: brightness(200%);
+    }
+    .coal-mine.active {
+        display: flex;
+    }
+    #ore-container {
+        position: absolute;
+        inset: 0;
+    }
+    /* Player character */
+    #player {
+        position: absolute;
+        width: 14px;
+        height: 14px;
+        background: white;
+        border-radius: 50%;
+        box-shadow: 0 0 8px rgba(255,255,255,0.9), 0 0 16px rgba(255,255,255,0.4);
+        z-index: 15;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+    }
+    /* Mining progress bar */
+    #mining-bar-wrap {
+        position: absolute;
+        bottom: 60px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 200px;
+        height: 18px;
+        background: rgba(0,0,0,0.6);
+        border: 1px solid #555;
+        border-radius: 9px;
+        overflow: hidden;
+        display: none;
+        z-index: 20;
+    }
+    #mining-bar {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #444, #aaa);
+        border-radius: 9px;
+        transition: none;
+    }
+    #mining-label {
+        position: absolute;
+        bottom: 82px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-family: "Black Ops One", system-ui;
+        font-size: 0.75rem;
+        color: #ccc;
+        letter-spacing: 0.1em;
+        display: none;
+        z-index: 20;
+        white-space: nowrap;
+    }
+    .main-button {
+        width: 100%;
+        max-width: 500px;
+        height: 60px;
+        color: rgb(195, 195, 195);
+        background-color: black;
+        border-radius: 5px;
+        border: 2px solid rgb(65, 65, 65);
+        font-size: 18px;
+        transition: all 0.1s ease;
+        font-family: "Black Ops One", system-ui;
+    }
+    .main-button:active {
+        transform: scale(0.95);
+        background-color: #111;
+    }
+    .main-button:disabled {
+        width: 100%;
+        max-width: 500px;
+        height: 50px;
+        color: rgb(35, 35, 35);
+        background-color: black;
+        border-radius: 5px;
+        border: 2px solid rgb(65, 65, 65);
+        font-size: 18px;
+        font-family: "Black Ops One", system-ui;
+    }
+    .sell_menu {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.85);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        backdrop-filter: blur(3px);
+    }
+    .menu_box {
+        background: #0f0d08;
+        border: 1px solid #3a2a1a;
+        border-radius: 10px;
+        padding: 28px 32px;
+        text-align: center;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.7);
+        color: white;
+        min-width: 280px;
+        max-width: 90vw;
+    }
+    #sell-panel {
+        width: min(700px, 96vw);
+        max-height: 88vh;
+        background: #080705;
+        border: 1px solid #2a1e10;
+        border-top: 3px solid #c8a96e;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 0 60px rgba(0,0,0,0.9), inset 0 1px 0 rgba(200,169,110,0.08);
+    }
+    #sell-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 24px 16px;
+        border-bottom: 1px solid #1a1208;
+        background: #0a0804;
+        flex-shrink: 0;
+    }
+    #sell-title {
+        font-family: "Black Ops One", system-ui;
+        font-size: 1.25rem;
+        color: #c8a96e;
+        letter-spacing: 0.15em;
+    }
+    #sell-coins-display {
+        font-family: "Black Ops One", system-ui;
+        font-size: 1rem;
+        color: #6a8a50;
+        letter-spacing: 0.05em;
+    }
+    #sell-ore-list {
+        overflow-y: auto;
+        flex: 1;
+        padding: 0;
+    }
+    #sell-ore-list::-webkit-scrollbar { width: 4px; }
+    #sell-ore-list::-webkit-scrollbar-track { background: #0a0804; }
+    #sell-ore-list::-webkit-scrollbar-thumb { background: #2a1e10; }
+
+    .sell-row {
+        display: grid;
+        grid-template-columns: 36px 1fr auto;
+        align-items: center;
+        gap: 0;
+        padding: 14px 24px;
+        border-bottom: 1px solid #120e07;
+        transition: background 0.1s;
+    }
+    .sell-row:hover { background: #0f0c07; }
+    .sell-row.depleted { opacity: 0.22; pointer-events: none; }
+
+    .sell-row-icon {
+        font-size: 1.4rem;
+        line-height: 1;
+    }
+    .sell-row-info {
+        padding: 0 14px;
+    }
+    .sell-row-name {
+        font-family: "Black Ops One", system-ui;
+        font-size: 0.88rem;
+        color: #c8a96e;
+        letter-spacing: 0.06em;
+        line-height: 1;
+    }
+    .sell-row-qty {
+        font-size: 0.78rem;
+        color: #6a5a40;
+        margin-top: 4px;
+        letter-spacing: 0.03em;
+    }
+    .sell-row-rate {
+        font-size: 0.72rem;
+        color: #4a3a28;
+        margin-top: 2px;
+        letter-spacing: 0.02em;
+    }
+    .sell-row-btns {
+        display: flex;
+        gap: 6px;
+    }
+    .sell-amt-btn {
+        font-family: "Black Ops One", system-ui;
+        font-size: 0.72rem;
+        letter-spacing: 0.03em;
+        color: #7a6040;
+        background: #100e08;
+        border: 1px solid #2a1e10;
+        padding: 8px 11px;
+        cursor: pointer;
+        transition: all 0.1s;
+        white-space: nowrap;
+        line-height: 1;
+    }
+    .sell-amt-btn:hover {
+        background: #1e1608;
+        border-color: #c8a96e;
+        color: #c8a96e;
+    }
+    .sell-amt-btn:active { transform: scale(0.94); }
+    .sell-amt-btn.sell-all {
+        color: #6a8a50;
+        border-color: #2a3a1a;
+    }
+    .sell-amt-btn.sell-all:hover {
+        background: #0e1408;
+        border-color: #6a8a50;
+        color: #8aba68;
+    }
+
+    #sell-footer {
+        padding: 14px 24px;
+        border-top: 1px solid #1a1208;
+        background: #0a0804;
+        flex-shrink: 0;
+        display: flex;
+        justify-content: flex-end;
+    }
+    #sell-close-btn {
+        font-family: "Black Ops One", system-ui;
+        font-size: 0.85rem;
+        letter-spacing: 0.1em;
+        color: #4a3a28;
+        background: transparent;
+        border: 1px solid #2a1e10;
+        padding: 8px 20px;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+    #sell-close-btn:hover { color: #c8a96e; border-color: #4a3020; }
+    #sell-panel .sell-button1, #sell-panel .sell-button2 { display: none; }
+    .sell-button1 {
+        width: 100%;
+        max-width: 500px;
+        height: 60px;
+        color: rgb(2, 122, 0);
+        background-color: black;
+        border-radius: 5px;
+        border: 2px solid rgb(65, 65, 65);
+        font-size: 18px;
+        transition: all 0.1s ease;
+        font-family: "Black Ops One", system-ui;
+    }
+    .sell-button2 {
+        width: 100%;
+        max-width: 500px;
+        height: 60px;
+        color: rgb(139, 6, 6);
+        background-color: black;
+        border-radius: 5px;
+        border: 2px solid rgb(65, 65, 65);
+        font-size: 18px;
+        transition: all 0.1s ease;
+        font-family: "Black Ops One", system-ui;
+    }
+    .return {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 10%;
+        height: 10%;
+        margin-top: 36px;
+        padding: 12px 36px;
+        font-family: "Black Ops One", system-ui;
+        font-size: 0.9rem;
+        letter-spacing: 0.05em;
+        color: #a08060;
+        background: #0f0d08;
+        border: .05px solid #000000;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.15s;
+        z-index: 25;
+    }
+
+    /* ── Particle layer (sits above mine, below UI) ── */
+    #particle-layer {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 30;
+        overflow: visible;
+    }
+
+    /* Mining spark — tiny dark shard that shoots out while digging */
+    .spark {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-radius: 1px;
+        background: #2a2a2a;
+        box-shadow: 0 0 3px #555;
+        pointer-events: none;
+        opacity: 1;
+    }
+
+    /* Ore chunk — larger fragment that flies to the counter on break */
+    .ore-chunk {
+        position: absolute;
+        width: 24px;
+        height: 24px;
+        border-radius: 2px;
+        background: #1a1a1a;
+        box-shadow: 0 0 6px #444, inset 0 0 3px rgba(255,255,255,0.1);
+        pointer-events: none;
+        opacity: 1;
+    }
+
+    /* ── Copper Mine ── */
+    .copper-mine {
+        position: fixed;
+        inset: 0;
+        margin: 0;
+        padding: 0;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-image: url('https://res.cloudinary.com/dhpahuvxs/image/upload/v1776975671/texture_f0geuq.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        box-sizing: border-box;
+        z-index: 10;
+        filter: brightness(200%);
+    }
+    .copper-mine.active { display: flex; }
+
+    #copper-ore-container {
+        position: absolute;
+        inset: 0;
+    }
+    #copper-player {
+        position: absolute;
+        width: 14px;
+        height: 14px;
+        background: #e87d40;
+        border-radius: 50%;
+        box-shadow: 0 0 8px rgba(232,125,64,0.9), 0 0 16px rgba(232,125,64,0.4);
+        z-index: 15;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+    }
+    #copper-mining-bar-wrap {
+        position: absolute;
+        bottom: 60px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 200px;
+        height: 18px;
+        background: rgba(0,0,0,0.6);
+        border: 1px solid #7a4a20;
+        border-radius: 9px;
+        overflow: hidden;
+        display: none;
+        z-index: 20;
+    }
+    #copper-mining-bar {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #7a3a10, #e87d40);
+        border-radius: 9px;
+        transition: none;
+    }
+    #copper-mining-label {
+        position: absolute;
+        bottom: 82px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-family: "Black Ops One", system-ui;
+        font-size: 0.75rem;
+        color: #e87d40;
+        letter-spacing: 0.1em;
+        display: none;
+        z-index: 20;
+        white-space: nowrap;
+    }
+    .copper-spark {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #e87d40;
+        box-shadow: 0 0 4px #ff9955;
+        pointer-events: none;
+        opacity: 1;
+    }
+    .copper-chunk {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        border-radius: 3px;
+        background: radial-gradient(circle at 40% 35%, #e87d40, #7a3010);
+        box-shadow: 0 0 6px rgba(232,125,64,0.5);
+        pointer-events: none;
+        opacity: 1;
+    }
+    #quartz-mining-bar {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #edeae8, #ffa6f2);
+        border-radius: 9px;
+        transition: none;
+    }
+    #quartz-player {
+        position: absolute;
+        width: 14px;
+        height: 14px;
+        background: #ffa6f2;
+        border-radius: 50%;
+        box-shadow: 0 0 8px rgba(251, 251, 251, 0.9), 0 0 16px rgb(255, 172, 255);
+        z-index: 15;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+    }
+    .quartz-mine {
+        position: fixed;
+        inset: 0;
+        margin: 0;
+        padding: 0;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-image: url('https://res.cloudinary.com/dhpahuvxs/image/upload/v1776975671/texture_f0geuq.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        box-sizing: border-box;
+        z-index: 10;
+    }
+    
+    </style>
+</head>
+
+<body>
+    <main>
+        <div id="sell_menu" class="sell_menu" style="display:none;">
+            <div id="sell-panel">
+                <div id="sell-header">
+                    <span id="sell-title">⛏ SELL ORES</span>
+                    <span id="sell-coins-display">0.00 🪙</span>
+                </div>
+                <div id="sell-ore-list"></div>
+                <div id="sell-footer">
+                    <button onclick="cancel_sell()" id="sell-close-btn">✕ CLOSE</button>
+                </div>
+            </div>
+        </div>
+        <h1 id="title" class="top">Coins: Loading...</h1>
+        <div id="screen1" class="screen1">
+            <button id="sell"            class="main-button" onclick="btn_click_selling()">Sell Items</button>
+            <button id="marketplace_btn" class="main-button" onclick="btn_click_marketplace()">Open Marketplace</button>
+            <button id="inventory_btn"   class="main-button" onclick="btn_click_inventory()">Inventory</button>
+            <button id="M1"              class="main-button" onclick="enter_coal()">Enter Coal Mine</button>
+            <button id="M2"              class="main-button" onclick="enter_copper()">Enter Copper Mine</button>
+            <button id="M3"              class="main-button" onclick="enter_quartz()">Enter Quartz Mine</button>
+            <button id="M4"              class="main-button" onclick="">Enter Gold Mine</button>
+            <button id="M5"              class="main-button" onclick="">Enter Amethyst Mine</button>
+            <button id="M6"              class="main-button" onclick="">Enter Ruby Mine</button>
+            <button id="M7"              class="main-button" onclick="">Enter Jade Mine</button>
+            <button id="M8"              class="main-button" onclick="">Enter Emerald Mine</button>
+            <button id="M9"              class="main-button" onclick="">Enter Diamond Mine</button>
+            <button id="M10"             class="main-button" onclick="">Enter Titanium Mine</button>
+        </div>
+        <div id="marketplace" class="marketplace">
+            <div class="market-header">
+                <h2>Death's Market</h2>
+                <p>No refund lil bro 😠</p>
+            </div>
+
+            <div class="market-section-label">Coal Shop</div>
+            <div class="market-grid">
+                <div class="shop-card" id="coalH" onclick="open_purchase_menu('Handle', ['50 Coal', '5 Coins'], ['+1 Handle'])">
+                    <div class="shop-card-icon">🪵</div>
+                    <div class="shop-card-name">Handle</div>
+                    <div class="shop-card-cost"><span>50 Coal</span><br>5 Coins</div>
+                </div>
+                <div class="shop-card" id="coalPi" onclick="open_purchase_menu('Coal Pickaxe', ['100 Coal','1 Handle','20 Coins'], ['Harvest 1.5x Ore', 'Increased Mining speed'])"  >
+                    <div class="shop-card-icon">⛏️</div>
+                    <div class="shop-card-name">Coal Pickaxe</div>
+                    <div class="shop-card-cost"><span>100 Coal</span><br>1 Handle · 20 Coins</div>
+                </div>
+                <div class="shop-card" id="coalPi2" onclick="open_purchase_menu('Advanced Coal Pickaxe', ['250 Coal','1 Handle','50 Coins'], ['Harvest 2x Ore', 'Increased Mining speed'])"  >
+                    <div class="shop-card-icon">⛏️</div>
+                    <div class="shop-card-name">Advanced Coal Pickaxe</div>
+                    <div class="shop-card-cost"><span>250 Coal</span><br>1 Handle · 50 Coins</div>
+                </div>
+                <div class="shop-card" id="coalD" onclick="open_purchase_menu('Coal Drill', ['250 Coal', '50 Coins'], ['+5 Coal per second (passive)'])">
+                    <div class="shop-card-icon">🔩</div>
+                    <div class="shop-card-name">Coal Drill</div>
+                    <div class="shop-card-cost"><span>200 Coal</span><br>50 Coins</div>
+                </div>
+                <div class="shop-card" id="coalPo" onclick="open_purchase_menu('Coal Potion', ['80 Coal', '15 Coins'], ['2x Coal yield for 5 minutes'])">
+                    <div class="shop-card-icon">⚗️</div>
+                    <div class="shop-card-name">Coal Potion</div>
+                    <div class="shop-card-cost"><span>80 Coal</span><br>15 Coins</div>
+                </div>
+                <div class="shop-card" id="gunpowder" onclick="open_purchase_menu('Gunpowder', ['120 Coal', '10 Coins'], ['+5 Gunpowder'])">
+                    <div class="shop-card-icon">💣</div>
+                    <div class="shop-card-name">5× Gunpowder</div>
+                    <div class="shop-card-cost"><span>120 Coal</span><br>10 Coins</div>
+                </div>
+                <div class="shop-card" id="lanterB" onclick="open_purchase_menu('Basic Lantern', ['60 Coal', '8 Coins'], ['+3 Coal Ore Spawns in Mine'])">
+                    <div class="shop-card-icon">🪔</div>
+                    <div class="shop-card-name">Basic Lantern</div>
+                    <div class="shop-card-cost"><span>60 Coal</span><br>8 Coins</div>
+                </div>
+                <div class="shop-card" id="unlockCopper" onclick="open_purchase_menu('Unlock Copper Mine', ['3500 Coal', '150 Coins'], ['Access to the Copper Mine'])">
+                    <div class="shop-card-icon">⚒️</div>
+                    <div class="shop-card-name">Unlock Copper Mine</div>
+                    <div class="shop-card-cost"><span>3500 Coal</span><br>150 Coins</div>
+                </div>
+            </div>
+
+            <div class="market-section-label">Copper Shop</div>
+            <div class="market-grid">
+                <div class="shop-card locked" id="copperPi" onclick="open_purchase_menu('Copper Pickaxe', ['150 Copper', '1 Handle', '40 Coins', 'gunpowder 20', 'coal ore 100'], ['Mine 2x faster', '2.5x Copper yield'])">
+                    <div class="shop-card-icon">⛏️</div>
+                    <div class="shop-card-name">Copper Pickaxe</div>
+                    <div class="shop-card-cost"><span>150 Copper · 100 coal</span><br>1 Handle · 40 Coins · 20 gunpowder</div>
+                </div>
+                <div class="shop-card locked" id="copperD" onclick="open_purchase_menu('Copper Drill', ['300 Copper', '1 Copper Pickaxe', '80 Coins'], ['+1 Copper per second (passive)'])">
+                    <div class="shop-card-icon">🔩</div>
+                    <div class="shop-card-name">Copper Drill</div>
+                    <div class="shop-card-cost"><span>300 Copper</span><br>1 Pickaxe · 80 Coins</div>
+                </div>
+                <div class="shop-card locked" id="copperPo" onclick="open_purchase_menu('Copper Potion', ['120 Copper', '30 Coins'], ['2x Copper yield for 5 minutes'])">
+                    <div class="shop-card-icon">⚗️</div>
+                    <div class="shop-card-name">Copper Potion</div>
+                    <div class="shop-card-cost"><span>120 Copper</span><br>30 Coins</div>
+                </div>
+                <div class="shop-card locked" id="copperLant" onclick="open_purchase_menu('Copper Lantern', ['100 Copper', '12 Coins'], ['+3 Copper Ore Spawns in Mine'])">
+                    <div class="shop-card-icon">🏮</div>
+                    <div class="shop-card-name">Copper Lantern</div>
+                    <div class="shop-card-cost"><span>100 Copper</span><br>12 Coins</div>
+                </div>
+                <div class="shop-card locked" id="unlockQuartz" onclick="open_purchase_menu('Unlock Quartz Mine', ['5000 Copper', '300 Coins'], ['Access to the Quartz Mine'])">
+                    <div class="shop-card-icon">⚒️</div>
+                    <div class="shop-card-name">Unlock Quartz Mine</div>
+                    <div class="shop-card-cost"><span>5000 Copper</span><br>300 Coins</div>
+                </div>
+            </div>
+
+            <button class="market-back-btn" onclick="return_shop()">← Back to Map</button>
+        </div>
+
+        <div id="inventory" class="marketplace">
+            <div class="market-header">
+                <h2>Inventory</h2>
+                <p>Everything you've got</p>
+            </div>
+
+            <div class="market-section-label">Ores</div>
+            <div class="market-grid">
+                <div class="shop-card" style="cursor:default;">
+                    <div class="shop-card-icon">🪨</div>
+                    <div class="shop-card-name">Coal</div>
+                    <div class="shop-card-cost" id="inv-coal"><span>0</span></div>
+                </div>
+                <div class="shop-card" style="cursor:default;">
+                    <div class="shop-card-icon">🟤</div>
+                    <div class="shop-card-name">Copper</div>
+                    <div class="shop-card-cost" id="inv-copper"><span>0</span></div>
+                </div>
+                <div class="shop-card" style="cursor:default;">
+                    <div class="shop-card-icon">🔷</div>
+                    <div class="shop-card-name">Quartz</div>
+                    <div class="shop-card-cost" id="inv-quartz"><span>0</span></div>
+                </div>
+                <div class="shop-card" style="cursor:default;">
+                    <div class="shop-card-icon">✨</div>
+                    <div class="shop-card-name">Gold</div>
+                    <div class="shop-card-cost" id="inv-gold"><span>0</span></div>
+                </div>
+                <div class="shop-card" style="cursor:default;">
+                    <div class="shop-card-icon">💜</div>
+                    <div class="shop-card-name">Amethyst</div>
+                    <div class="shop-card-cost" id="inv-amethyst"><span>0</span></div>
+                </div>
+                <div class="shop-card" style="cursor:default;">
+                    <div class="shop-card-icon">🔴</div>
+                    <div class="shop-card-name">Ruby</div>
+                    <div class="shop-card-cost" id="inv-ruby"><span>0</span></div>
+                </div>
+                <div class="shop-card" style="cursor:default;">
+                    <div class="shop-card-icon">🟢</div>
+                    <div class="shop-card-name">Jade</div>
+                    <div class="shop-card-cost" id="inv-jade"><span>0</span></div>
+                </div>
+                <div class="shop-card" style="cursor:default;">
+                    <div class="shop-card-icon">💚</div>
+                    <div class="shop-card-name">Emerald</div>
+                    <div class="shop-card-cost" id="inv-emerald"><span>0</span></div>
+                </div>
+                <div class="shop-card" style="cursor:default;">
+                    <div class="shop-card-icon">💎</div>
+                    <div class="shop-card-name">Diamond</div>
+                    <div class="shop-card-cost" id="inv-diamond"><span>0</span></div>
+                </div>
+                <div class="shop-card" style="cursor:default;">
+                    <div class="shop-card-icon">⚙️</div>
+                    <div class="shop-card-name">Titanium</div>
+                    <div class="shop-card-cost" id="inv-titanium"><span>0</span></div>
+                </div>
+            </div>
+
+            <div class="market-section-label">Tools & Items</div>
+            <div class="market-grid">
+                <div class="shop-card" style="cursor:default;">
+                    <div class="shop-card-icon">🪵</div>
+                    <div class="shop-card-name">Handles</div>
+                    <div class="shop-card-cost" id="inv-handle"><span>0</span></div>
+                </div>
+                <div class="shop-card" style="cursor:default;">
+                    <div class="shop-card-icon">⛏️</div>
+                    <div class="shop-card-name">Pickaxe</div>
+                    <div class="shop-card-cost" id="inv-pickaxe"><span>None</span></div>
+                </div>
+            </div>
+
+            <button class="market-back-btn" onclick="return_inventory()">← Back to Map</button>
+        </div>
+        <div id="purchase_menu" class="sell_menu" style="display:none;">
+            <div class="menu_box">
+                <h1 style="color:#c8a96e" id="purchase_item_name">Item Name</h1>
+                <h3 style="color:#c8a96e;margin:4px 0 12px;font-family:'Black Ops One',system-ui;font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;">Cost</h3>
+                <div id="purchase_costs"></div>
+                <h3 style="color:#c8a96e;margin:16px 0 8px;font-family:'Black Ops One',system-ui;font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;">Item Stats</h3>
+                <div id="purchase_stats"></div>
+                <br>
+                <button onclick="confirm_purchase()" class="sell-button1">Purchase</button>
+                <button onclick="close_purchase_menu()" class="sell-button2">Back</button>
+            </div>
+        </div>
+    </main>
+
+    <div id="coal-mine" class="coal-mine">
+        <div id="ore-container"></div>
+        <div id="particle-layer"></div>
+        <div id="player"></div>
+        <div id="mining-label">MINING...</div>
+        <div id="mining-bar-wrap"><div id="mining-bar"></div></div>
+        <button class="return" onclick="return_coal()">← Back to Map</button>
+    </div>
+
+    <div id="copper-mine" class="copper-mine">
+        <div id="copper-ore-container"></div>
+        <div id="copper-particle-layer"></div>
+        <div id="copper-player"></div>
+        <div id="copper-mining-label">MINING...</div>
+        <div id="copper-mining-bar-wrap"><div id="copper-mining-bar"></div></div>
+        <button class="return" onclick="return_copper()">← Back to Map</button>
+    </div>
+
+    <div id="quartz-mine" class="quartz-mine">
+        <div id="quartz-ore-container"></div>
+        <div id="quartz-particle-layer"></div>
+        <div id="quartz-player"></div>
+        <div id="quartz-mining-label">MINING...</div>
+        <div id="quartz-mining-bar-wrap"><div id="quartz-mining-bar"></div></div>
+        <button class="return" onclick="return_quartz()">← Back to Map</button>
+    </div>
+<script>
+    // ─────────────────────────────────────────────────────────────
+    //  MOVEMENT BOUNDS  — always derived from the actual viewport
+    //  so the game is consistent across all devices and browsers.
+    //  MARGIN controls how many px of padding to leave on each edge.
+    // ─────────────────────────────────────────────────────────────
+    const BOUNDS_MARGIN = 50;
+
+    function getBOUNDS() {
+        return {
+            left:   BOUNDS_MARGIN,
+            right:  window.innerWidth  - BOUNDS_MARGIN,
+            top:    BOUNDS_MARGIN,
+            bottom: window.innerHeight - BOUNDS_MARGIN,
+        };
+    }
+
+    // Live reference — always reflects current viewport
+    let BOUNDS = getBOUNDS();
+
+    // Keep bounds in sync if the user resizes (e.g. Chromebook split-screen)
+    window.addEventListener('resize', () => { BOUNDS = getBOUNDS(); });
+    // ─────────────────────────────────────────────────────────────
+
+    const PLAYER_SPEED   = 10;    // px per frame (60 fps)
+    const MINE_RANGE     = 80;   // px radius to trigger mining
+    const BASE_MINE_TIME = 2000; // ms to mine with bare hands
+
+    // Pickaxe tiers: { mineTimeMs, yieldMultiplier }
+    const PICKAXE_TIERS = {
+        none:   { mineTimeMs: 2000, yieldMulti: 1   },
+        coal:   { mineTimeMs: 1350, yieldMulti: 1.5 },
+        coal2:  { mineTimeMs: 1000, yieldMulti: 2.0 },
+        copper: { mineTimeMs:  900, yieldMulti: 2.5 },
+        // add more tiers here as you build them out
+    };
+
+    let currentPickaxe = 'none';
+
+    // ── Extra item state ──────────────────────────────────────────
+    let coal_drill_active  = false;
+    let coal_drill_interval = null;
+    let coal_potion_active = false;
+    let coal_potion_timer  = null;
+    let gunpowder          = 0;
+    let coal_lantern       = false;  // +3 spawns
+    let copper_handle      = 0;
+    let copper_pickaxe_owned = false;
+    let copper_drill_active  = false;
+    let copper_drill_interval = null;
+    let copper_potion_active = false;
+    let copper_potion_timer  = null;
+    let copper_shells        = 0;
+    let copper_lantern       = false;
+    let inCopperMine = false;
+    let copperPlayerX = 200, copperPlayerY = 300;
+    let copperMineLoop = null;
+    let copperMiningTarget = null;
+    let copperMiningProgress = 0;
+    let copperMiningInterval = null;
+
+    // ── Game state ────────────────────────────────────────────────
+    let ore_value    = 1; 
+    let coins        = 0; // debug value
+    let handle       = 0;
+    let coal_ore     = 0; // debug value
+    let copper_mine_b   = true, copper_ore   = 0;
+    let quartz_mine_b   = true, quartz_ore   = 0;
+    let gold_mine_b     = false, gold_ore     = 0;
+    let amethyst_mine_b = false, amethyst_ore = 0;
+    let ruby_mine_b     = false, ruby_ore     = 0;
+    let jade_mine_b     = false, jade_ore     = 0;
+    let emerald_mine_b  = false, emerald_ore  = 0;
+    let diamond_mine_b  = false, diamond_ore  = 0;
+    let titanium_mine_b = false, titanium_ore = 0;
+
+    // ── Player state ──────────────────────────────────────────────
+    let playerX = 200, playerY = 300;
+    const keys  = {};
+    let mineLoop  = null;
+    let miningTarget = null;
+    let miningProgress = 0;
+    let miningInterval = null;
+    let inMine = false;
+
+    // ── UI helpers ────────────────────────────────────────────────
+    function mainUI() {
+        document.getElementById("M2").disabled  = !copper_mine_b;
+        document.getElementById("M3").disabled  = !quartz_mine_b;
+        document.getElementById("M4").disabled  = !gold_mine_b;
+        document.getElementById("M5").disabled  = !amethyst_mine_b;
+        document.getElementById("M6").disabled  = !ruby_mine_b;
+        document.getElementById("M7").disabled  = !jade_mine_b;
+        document.getElementById("M8").disabled  = !emerald_mine_b;
+        document.getElementById("M9").disabled  = !diamond_mine_b;
+        document.getElementById("M10").disabled = !titanium_mine_b;
+
+        // Unlock copper shop items when copper mine is accessible
+        ['copperlH','copperPi','copperD','copperPo','copperGun','copperLant','unlockQuartz'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                if (copper_mine_b) el.classList.remove('locked');
+                else el.classList.add('locked');
+            }
+        });
+        // Hide Unlock Copper Mine card once bought
+        const ucEl = document.getElementById("unlockCopper");
+        if (ucEl && copper_mine_b) ucEl.classList.add('bought');
+    }
+    // ── Save / Load ───────────────────────────────────────────────
+    const SAVE_KEY = "rubbleRushSave";
+
+    function saveGame() {
+        const data = {
+            coins, coal_ore, copper_ore, quartz_ore, gold_ore,
+            amethyst_ore, ruby_ore, jade_ore, emerald_ore, diamond_ore, titanium_ore,
+            ore_value, handle, gunpowder,
+            currentPickaxe,
+            coal_drill_active, coal_potion_active, coal_lantern,
+            copper_handle, copper_pickaxe_owned, copper_drill_active,
+            copper_potion_active, copper_shells, copper_lantern,
+            copper_mine_b, quartz_mine_b, gold_mine_b, amethyst_mine_b,
+            ruby_mine_b, jade_mine_b, emerald_mine_b, diamond_mine_b, titanium_mine_b,
+        };
+        try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch(e) {}
+    }
+
+    function loadGame() {
+        try {
+            const raw = localStorage.getItem(SAVE_KEY);
+            if (!raw) return;
+            const d = JSON.parse(raw);
+            coins          = d.coins          ?? coins;
+            coal_ore       = d.coal_ore       ?? coal_ore;
+            copper_ore     = d.copper_ore     ?? copper_ore;
+            quartz_ore     = d.quartz_ore     ?? quartz_ore;
+            gold_ore       = d.gold_ore       ?? gold_ore;
+            amethyst_ore   = d.amethyst_ore   ?? amethyst_ore;
+            ruby_ore       = d.ruby_ore       ?? ruby_ore;
+            jade_ore       = d.jade_ore       ?? jade_ore;
+            emerald_ore    = d.emerald_ore    ?? emerald_ore;
+            diamond_ore    = d.diamond_ore    ?? diamond_ore;
+            titanium_ore   = d.titanium_ore   ?? titanium_ore;
+            ore_value      = d.ore_value      ?? ore_value;
+            handle         = d.handle         ?? handle;
+            gunpowder      = d.gunpowder      ?? gunpowder;
+            currentPickaxe = d.currentPickaxe ?? currentPickaxe;
+            coal_drill_active     = d.coal_drill_active     ?? false;
+            coal_potion_active    = d.coal_potion_active    ?? false;
+            coal_lantern          = d.coal_lantern          ?? false;
+            copper_handle         = d.copper_handle         ?? 0;
+            copper_pickaxe_owned  = d.copper_pickaxe_owned  ?? false;
+            copper_drill_active   = d.copper_drill_active   ?? false;
+            copper_potion_active  = d.copper_potion_active  ?? false;
+            copper_shells         = d.copper_shells         ?? 0;
+            copper_lantern        = d.copper_lantern        ?? false;
+            copper_mine_b   = d.copper_mine_b   ?? true;
+            quartz_mine_b   = d.quartz_mine_b   ?? true;
+            gold_mine_b     = d.gold_mine_b     ?? false;
+            amethyst_mine_b = d.amethyst_mine_b ?? false;
+            ruby_mine_b     = d.ruby_mine_b     ?? false;
+            jade_mine_b     = d.jade_mine_b     ?? false;
+            emerald_mine_b  = d.emerald_mine_b  ?? false;
+            diamond_mine_b  = d.diamond_mine_b  ?? false;
+            titanium_mine_b = d.titanium_mine_b ?? false;
+            console.log("Save loaded");
+        } catch(e) { console.warn("Save load failed:", e); }
+    }
+
+    function resetGame() {
+        if (!confirm("Reset all progress? This cannot be undone.")) return;
+        try { localStorage.removeItem(SAVE_KEY); } catch(e) {}
+        location.reload();
+    }
+
+    // Auto-save every 10 seconds
+    setInterval(saveGame, 10000);
+
+    function updateUI() {
+        document.getElementById("title").textContent = "Very early developement expect constant changes\n" + "🪙 Coins: " + coins.toFixed(2) + "\n" + "🪨 Coal: "+ coal_ore.toFixed(2) + "\n" + "🟤 Copper: "+ copper_ore.toFixed(2) + "\n" + "🔷 Quartz: "+ quartz_ore.toFixed(2) + "\n" + "✨ Gold: "+ gold_ore.toFixed(2) + "\n" + "💜 Amethyst: "+ amethyst_ore.toFixed(2) + "\n" + "🔴 Ruby: "+ ruby_ore.toFixed(2) + "\n" + "🟢 Jade: "+ jade_ore.toFixed(2) + "\n" + "💚 Emerald: "+ emerald_ore.toFixed(2) + "\n" + "💎 Diamond: "+ diamond_ore.toFixed(2) + "\n" + "⚙️ Titanium: "+ titanium_ore.toFixed(2);
+        saveGame();
+    }
+    function updateMineUI() {
+        document.getElementById("title").textContent = "🪙 Coins: " + coins.toFixed(2) + "\n" + "🪨 Coal: "+ coal_ore.toFixed(2) + "\n" + "🟤 Copper: "+ copper_ore.toFixed(2) + "\n" + "🔷 Quartz: "+ quartz_ore.toFixed(2) + "\n" + "✨ Gold: "+ gold_ore.toFixed(2) + "\n" + "💜 Amethyst: "+ amethyst_ore.toFixed(2) + "\n" + "🔴 Ruby: "+ ruby_ore.toFixed(2) + "\n" + "🟢 Jade: "+ jade_ore.toFixed(2) + "\n" + "💚 Emerald: "+ emerald_ore.toFixed(2) + "\n" + "💎 Diamond: "+ diamond_ore.toFixed(2) + "\n" + "⚙️ Titanium: "+ titanium_ore.toFixed(2);
+        saveGame();
+    }
+    function updateCopperMineUI() {
+        document.getElementById("title").textContent = "🪙 Coins: " + coins.toFixed(2) + "\n" + "🪨 Coal: "+ coal_ore.toFixed(2) + "\n" + "🟤 Copper: "+ copper_ore.toFixed(2) + "\n" + "🔷 Quartz: "+ quartz_ore.toFixed(2) + "\n" + "✨ Gold: "+ gold_ore.toFixed(2) + "\n" + "💜 Amethyst: "+ amethyst_ore.toFixed(2) + "\n" + "🔴 Ruby: "+ ruby_ore.toFixed(2) + "\n" + "🟢 Jade: "+ jade_ore.toFixed(2) + "\n" + "💚 Emerald: "+ emerald_ore.toFixed(2) + "\n" + "💎 Diamond: "+ diamond_ore.toFixed(2) + "\n" + "⚙️ Titanium: "+ titanium_ore.toFixed(2);
+        saveGame();
+    }
+
+    // ── Sell ──────────────────────────────────────────────────────
+    const ORE_DEFS = [
+        { key: 'coal_ore',     icon: '🪨', name: 'Coal',     rate: 0.1  },
+        { key: 'copper_ore',   icon: '🟤', name: 'Copper',   rate: 0.5  },
+        { key: 'quartz_ore',   icon: '🔷', name: 'Quartz',   rate: 1.2  },
+        { key: 'gold_ore',     icon: '🟡', name: 'Gold',     rate: 2.1  },
+        { key: 'amethyst_ore', icon: '💜', name: 'Amethyst', rate: 4.1  },
+        { key: 'ruby_ore',     icon: '🔴', name: 'Ruby',     rate: 7.8  },
+        { key: 'jade_ore',     icon: '🟢', name: 'Jade',     rate: 13.6 },
+        { key: 'emerald_ore',  icon: '💚', name: 'Emerald',  rate: 28.9 },
+        { key: 'diamond_ore',  icon: '💎', name: 'Diamond',  rate: 38.4 },
+        { key: 'titanium_ore', icon: '⚙️', name: 'Titanium', rate: 74.3 },
+    ];
+
+    function getOreVar(key) {
+        const map = { coal_ore, copper_ore, quartz_ore, gold_ore, amethyst_ore,
+                      ruby_ore, jade_ore, emerald_ore, diamond_ore, titanium_ore };
+        return map[key] ?? 0;
+    }
+    function setOreVar(key, val) {
+        if (key === 'coal_ore')     coal_ore     = val;
+        else if (key === 'copper_ore')   copper_ore   = val;
+        else if (key === 'quartz_ore')   quartz_ore   = val;
+        else if (key === 'gold_ore')     gold_ore     = val;
+        else if (key === 'amethyst_ore') amethyst_ore = val;
+        else if (key === 'ruby_ore')     ruby_ore     = val;
+        else if (key === 'jade_ore')     jade_ore     = val;
+        else if (key === 'emerald_ore')  emerald_ore  = val;
+        else if (key === 'diamond_ore')  diamond_ore  = val;
+        else if (key === 'titanium_ore') titanium_ore = val;
+    }
+
+    function sellOre(key, fraction) {
+        const qty = getOreVar(key);
+        const def = ORE_DEFS.find(d => d.key === key);
+        let amount;
+        if (fraction === 'one') {
+            amount = Math.min(1, qty);
+        } else {
+            amount = qty * fraction;
+        }
+        if (amount <= 0) return;
+        coins += amount * def.rate;
+        setOreVar(key, qty - amount);
+        refreshSellMenu();
+        updateUI();
+    }
+
+    function refreshSellMenu() {
+        const list = document.getElementById("sell-ore-list");
+        list.innerHTML = '';
+        let totalCoins = 0;
+        ORE_DEFS.forEach(def => {
+            const qty = getOreVar(def.key);
+            totalCoins += qty * def.rate;
+            const depleted = qty <= 0;
+            const row = document.createElement('div');
+            row.className = 'sell-row' + (depleted ? ' depleted' : '');
+            row.innerHTML = `
+                <span class="sell-row-icon">${def.icon}</span>
+                <div class="sell-row-info">
+                    <div class="sell-row-name">${def.name.toUpperCase()}</div>
+                    <div class="sell-row-qty">${qty.toFixed(1)} units &nbsp;·&nbsp; ${(qty * def.rate).toFixed(2)}🪙</div>
+                    <div class="sell-row-rate">${def.rate}🪙 per unit</div>
+                </div>
+                <div class="sell-row-btns">
+                    <button class="sell-amt-btn" onclick="sellOre('${def.key}','one')">SELL 1</button>
+                    <button class="sell-amt-btn" onclick="sellOre('${def.key}',0.5)">50%</button>
+                    <button class="sell-amt-btn" onclick="sellOre('${def.key}',0.75)">75%</button>
+                    <button class="sell-amt-btn sell-all" onclick="sellOre('${def.key}',1)">100%</button>
+                </div>
+            `;
+            list.appendChild(row);
+        });
+        document.getElementById("sell-coins-display").textContent =
+            "INVENTORY: " + totalCoins.toFixed(2) + " 🪙";
+    }
+
+    function btn_click_selling() {
+        refreshSellMenu();
+        document.getElementById("sell_menu").style.display = "flex";
+    }
+    function confirm_sell() {}
+    function cancel_sell() { document.getElementById("sell_menu").style.display = "none"; }
+
+    // ── Marketplace ───────────────────────────────────────────────
+    function btn_click_marketplace() {
+        document.getElementById("screen1").style.display = "none";
+        document.getElementById("marketplace").classList.add("is-open");
+    }
+    function return_shop() {
+        document.getElementById("marketplace").classList.remove("is-open");
+        document.getElementById("screen1").style.display = "flex";
+    }
+
+    function btn_click_inventory() {
+        document.getElementById("inv-coal").innerHTML     = `<span>${coal_ore.toFixed(1)}</span>`;
+        document.getElementById("inv-copper").innerHTML   = `<span>${copper_ore.toFixed(1)}</span>`;
+        document.getElementById("inv-quartz").innerHTML   = `<span>${quartz_ore.toFixed(1)}</span>`;
+        document.getElementById("inv-gold").innerHTML     = `<span>${gold_ore.toFixed(1)}</span>`;
+        document.getElementById("inv-amethyst").innerHTML = `<span>${amethyst_ore.toFixed(1)}</span>`;
+        document.getElementById("inv-ruby").innerHTML     = `<span>${ruby_ore.toFixed(1)}</span>`;
+        document.getElementById("inv-jade").innerHTML     = `<span>${jade_ore.toFixed(1)}</span>`;
+        document.getElementById("inv-emerald").innerHTML  = `<span>${emerald_ore.toFixed(1)}</span>`;
+        document.getElementById("inv-diamond").innerHTML  = `<span>${diamond_ore.toFixed(1)}</span>`;
+        document.getElementById("inv-titanium").innerHTML = `<span>${titanium_ore.toFixed(1)}</span>`;
+        document.getElementById("inv-handle").innerHTML   = `<span>${handle}</span>`;
+        document.getElementById("inv-pickaxe").innerHTML  = `<span>${currentPickaxe === 'none' ? 'None' : currentPickaxe + ' Pickaxe'}</span>`;
+        document.getElementById("screen1").style.display = "none";
+        document.getElementById("inventory").classList.add("is-open");
+    }
+
+    function return_inventory() {
+        document.getElementById("inventory").classList.remove("is-open");
+        document.getElementById("screen1").style.display = "flex";
+    }
+
+    // ── Coal mine ─────────────────────────────────────────────────
+    function enter_coal() {
+        document.getElementById("screen1").style.display = "none";
+        document.getElementById("coal-mine").style.display = "flex";
+        inMine = true;
+
+        // Spawn player near centre
+        playerX = window.innerWidth  / 2;
+        playerY = window.innerHeight / 2;
+        renderPlayer();
+        // Spawn initial ores (bonus if lantern owned)
+        const baseCount = coal_lantern ? 8 : 5;
+        for (let i = 0; i < baseCount; i++) coal_ore_spawn();
+        updateMineUI();
+        startMineLoop();
+    }
+
+    function coal_ore_spawn() {
+        const gc = document.createElement("div");
+        gc.dataset.ore = "coal";
+        // random position that respects bounds so ores don't hide behind walls
+        const minX = BOUNDS.left   + 64;
+        const maxX = BOUNDS.right  - 64;
+        const minY = BOUNDS.top    + 64;
+        const maxY = BOUNDS.bottom - 64;
+        gc.style.cssText = `
+            position: absolute;
+            width: 128px;
+            height: 128px;
+            left: ${minX + Math.random() * Math.max(0, maxX - minX)}px;
+            top:  ${minY + Math.random() * Math.max(0, maxY - minY)}px;
+            background-image: url('https://res.cloudinary.com/dhpahuvxs/image/upload/v1776206651/model_ec0njg.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            pointer-events: none;
+            user-select: none;
+        `;
+        document.getElementById("ore-container").appendChild(gc);
+        return gc;
+    }
+
+    function return_coal() {
+        stopMineLoop();
+        stopMining();
+        document.getElementById("ore-container").innerHTML = "";
+        document.getElementById("screen1").style.display = "flex";
+        document.getElementById("coal-mine").style.display = "none";
+        inMine = false;
+        updateUI();
+    }
+
+    // ── Player movement loop ──────────────────────────────────────
+    function startMineLoop() {
+        if (mineLoop) return;
+        mineLoop = setInterval(gameTick, 1000 / 60);
+    }
+    function stopMineLoop() {
+        clearInterval(mineLoop);
+        mineLoop = null;
+    }
+
+    function gameTick() {
+        // Movement
+        let dx = 0, dy = 0;
+        if (keys['KeyW'] || keys['ArrowUp'])    dy -= PLAYER_SPEED;
+        if (keys['KeyS'] || keys['ArrowDown'])  dy += PLAYER_SPEED;
+        if (keys['KeyA'] || keys['ArrowLeft'])  dx -= PLAYER_SPEED;
+        if (keys['KeyD'] || keys['ArrowRight']) dx += PLAYER_SPEED;
+
+        // Apply + clamp to bounds (always viewport-relative)
+        playerX = Math.min(BOUNDS.right,  Math.max(BOUNDS.left, playerX + dx));
+        playerY = Math.min(BOUNDS.bottom, Math.max(BOUNDS.top,  playerY + dy));
+        renderPlayer();
+
+        // Check spacebar — mine if in range of an ore
+        if (keys['Space']) {
+            const target = nearestOre();
+            if (target && !miningTarget) startMining(target);
+        } else {
+            if (miningTarget) stopMining();
+        }
+    }
+
+    function renderPlayer() {
+        const p = document.getElementById("player");
+        p.style.left = playerX + "px";
+        p.style.top  = playerY + "px";
+    }
+
+    function nearestOre() {
+        const ores = document.querySelectorAll("#ore-container div[data-ore]");
+        let closest = null, closestDist = Infinity;
+        for (const ore of ores) {
+            const cx = parseFloat(ore.style.left) + 64;
+            const cy = parseFloat(ore.style.top)  + 64;
+            const dist = Math.hypot(playerX - cx, playerY - cy);
+            if (dist < MINE_RANGE && dist < closestDist) {
+                closest = ore;
+                closestDist = dist;
+            }
+        }
+        return closest;
+    }
+
+    // ── Mining ────────────────────────────────────────────────────
+    function startMining(ore) {
+        miningTarget = ore;
+        miningProgress = 0;
+        document.getElementById("mining-bar-wrap").style.display = "block";
+        document.getElementById("mining-label").style.display    = "block";
+
+        const tier = PICKAXE_TIERS[currentPickaxe];
+        const totalTime = tier.mineTimeMs;
+        const tickMs = 50;
+
+        miningInterval = setInterval(() => {
+            // Stop if player moved away or let go of space
+            if (!keys['Space']) { stopMining(); return; }
+            const target = nearestOre();
+            if (target !== miningTarget) { stopMining(); return; }
+
+            miningProgress += tickMs;
+            const pct = Math.min(100, (miningProgress / totalTime) * 100);
+            document.getElementById("mining-bar").style.width = pct + "%";
+
+            // ── Emit mining sparks every ~100ms ───────────────────
+            if (Math.random() < 0.6) {
+                const oreCx = parseFloat(ore.style.left) + 64;
+                const oreCy = parseFloat(ore.style.top)  + 64;
+                emitSpark(oreCx, oreCy);
+            }
+
+            if (miningProgress >= totalTime) {
+                finishMining(ore, tier);
+            }
+        }, tickMs);
+    }
+
+    function stopMining() {
+        clearInterval(miningInterval);
+        miningInterval = null;
+        miningTarget   = null;
+        miningProgress = 0;
+        document.getElementById("mining-bar-wrap").style.display = "none";
+        document.getElementById("mining-label").style.display    = "none";
+        document.getElementById("mining-bar").style.width = "0%";
+    }
+
+    function finishMining(ore, tier) {
+        let gained = ((Math.random() * (8 - 4) + 4) * tier.yieldMulti);
+        if (coal_potion_active) gained *= 2;
+        coal_ore += gained;
+        const oreCx = parseFloat(ore.style.left) + 64;
+        const oreCy = parseFloat(ore.style.top)  + 64;
+        ore.remove();
+        stopMining();
+        // Launch ore chunks flying to the Coal counter
+        launchOreChunks(oreCx, oreCy, Math.round(gained));
+        coal_ore_spawn();
+        updateUI()
+    }
+
+    // ── Particle helpers ──────────────────────────────────────────
+
+    // Tiny spark that shoots outward from ore while mining
+    function emitSpark(cx, cy) {
+        const layer = document.getElementById("particle-layer");
+        const s = document.createElement("div");
+        s.className = "spark";
+        // random starting offset near ore centre
+        const ox = (Math.random() - 0.5) * 30;
+        const oy = (Math.random() - 0.5) * 30;
+        s.style.left = (cx + ox) + "px";
+        s.style.top  = (cy + oy) + "px";
+        layer.appendChild(s);
+
+        const angle  = Math.random() * Math.PI * 2;
+        const speed  = 40 + Math.random() * 80;   // px/s
+        const life   = 300 + Math.random() * 300;  // ms
+        const vx = Math.cos(angle) * speed;
+        const vy = Math.sin(angle) * speed - 60;   // bias upward
+        const start  = performance.now();
+
+        function step(now) {
+            const t = (now - start) / 1000;
+            const frac = (now - start) / life;
+            if (frac >= 1) { s.remove(); return; }
+            s.style.left    = (cx + ox + vx * t) + "px";
+            s.style.top     = (cy + oy + vy * t + 120 * t * t) + "px"; // gravity
+            s.style.opacity = (1 - frac);
+            s.style.transform = `rotate(${frac * 360}deg)`;
+            requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+    }
+
+    // Ore chunks that arc toward the Coal counter in the title bar
+    function launchOreChunks(fromX, fromY, count) {
+        const layer = document.getElementById("particle-layer");
+        // Target: the actual on-screen position of the title element — works on any screen size
+        const titleRect = document.getElementById("title").getBoundingClientRect();
+        const targetX = titleRect.right - titleRect.width * 0.1;
+        const targetY = titleRect.top + titleRect.height * 0.2;
+
+        const numChunks = Math.min(count + 3, 10); // 4–10 chunks
+        for (let i = 0; i < numChunks; i++) {
+            (function(delay) {
+                setTimeout(() => {
+                    const chunk = document.createElement("div");
+                    chunk.className = "ore-chunk";
+                    // random scatter around break point
+                    const sx = fromX + (Math.random() - 0.5) * 60;
+                    const sy = fromY + (Math.random() - 0.5) * 60;
+                    chunk.style.left = sx + "px";
+                    chunk.style.top  = sy + "px";
+                    layer.appendChild(chunk);
+
+                    // Bezier-style arc: pick a control point above midpoint
+                    const mx = (sx + targetX) / 2 + (Math.random() - 0.5) * 100;
+                    const my = Math.min(sy, targetY) - 80 - Math.random() * 120;
+
+                    const duration = 500 + Math.random() * 200;
+                    const start = performance.now();
+
+                    function fly(now) {
+                        const t = Math.min((now - start) / duration, 1);
+                        // Quadratic bezier
+                        const it = 1 - t;
+                        const bx = it*it*sx + 2*it*t*mx + t*t*targetX;
+                        const by = it*it*sy + 2*it*t*my + t*t*targetY;
+                        chunk.style.left    = bx + "px";
+                        chunk.style.top     = by + "px";
+                        chunk.style.opacity = t < 0.85 ? 1 : (1 - t) / 0.15;
+                        chunk.style.transform = `rotate(${t * 540}deg) scale(${1 - t * 0.4})`;
+                        if (t >= 1) { chunk.remove(); return; }
+                        requestAnimationFrame(fly);
+                    }
+                    requestAnimationFrame(fly);
+                }, delay);
+            })(i * 60 + Math.random() * 40);
+        }
+    }
+
+    // ── Keyboard ──────────────────────────────────────────────────
+    document.addEventListener('keydown', e => {
+        keys[e.code] = true;
+        if ((inMine || inCopperMine) && e.code === 'Space') e.preventDefault();
+    });
+    document.addEventListener('keyup',  e => { keys[e.code] = false; });
+
+    // ── Purchase menu ─────────────────────────────────────────────
+    let pending_purchase = null;
+
+    function open_purchase_menu(name, costs, stats) {
+        pending_purchase = { name, costs, stats };
+        document.getElementById("purchase_item_name").textContent = name;
+        document.getElementById("purchase_costs").innerHTML  = costs.map(c => `<h4>➜ ${c}</h4>`).join('');
+        document.getElementById("purchase_stats").innerHTML  = stats.map(s => `<h4>➜ ${s}</h4>`).join('');
+        document.getElementById("purchase_menu").style.display = "flex";
+    }
+    function close_purchase_menu() {
+        document.getElementById("purchase_menu").style.display = "none";
+        pending_purchase = null;
+    }
+    function confirm_purchase() {
+        if (!pending_purchase) return;
+        const n = pending_purchase.name;
+
+        // ── Coal Shop ─────────────────────────────────────────────
+        if (n === "Handle") {
+            if (coal_ore < 50) return alert("Not enough Coal Ore (need 50)");
+            if (coins   < 5)   return alert("Not enough Coins (need 5)");
+            coins    -= 5;
+            coal_ore -= 50;
+            handle   += 1;
+
+        } else if (n === "Coal Pickaxe") {
+            if (coins    < 20)  return alert("Not enough Coins (need 20)");
+            if (handle   < 1)   return alert("Missing Handle");
+            if (coal_ore < 100) return alert("Not enough Coal Ore (need 100)");
+            coins    -= 20;
+            handle   -= 1;
+            coal_ore -= 100;
+            currentPickaxe = 'coal';
+            document.getElementById("coalPi").classList.add("bought");
+        } else if (n === "Advanced Coal Pickaxe") {
+            if (coins    < 50)  return alert("Not enough Coins (need 50)");
+            if (handle   < 1)   return alert("Missing Handle");
+            if (coal_ore < 250) return alert("Not enough Coal Ore (need 250)");
+            coins    -= 50;
+            handle   -= 1;
+            coal_ore -= 250;
+            currentPickaxe = 'coal2';
+            document.getElementById("coalPi2").classList.add("bought");
+        } else if (n === "Coal Drill") {
+            if (coal_ore < 200) return alert("Not enough Coal Ore (need 200)");
+            if (coins    < 50)  return alert("Not enough Coins (need 50)");
+            coal_ore -= 200;
+            coins    -= 50;
+            coal_drill_active = true;
+            coal_drill_interval = setInterval(() => {
+                coal_ore += 5;
+                updateUI();
+            }, 1000);
+
+        } else if (n === "Coal Potion") {
+            if (coal_ore < 80) return alert("Not enough Coal Ore (need 80)");
+            if (coins    < 15) return alert("Not enough Coins (need 15)");
+            coal_ore -= 80;
+            coins    -= 15;
+            coal_potion_active = true;
+            clearTimeout(coal_potion_timer);
+            // 2x yield applied in finishMining via coal_potion_active flag
+            coal_potion_timer = setTimeout(() => {
+                coal_potion_active = false;
+            }, 5 * 60 * 1000);
+
+        } else if (n === "Gunpowder") {
+            if (coal_ore < 120) return alert("Not enough Coal Ore (need 120)");
+            if (coins    < 10)  return alert("Not enough Coins (need 10)");
+            coal_ore  -= 120;
+            coins     -= 10;
+            gunpowder += 5;
+
+        } else if (n === "Basic Lantern") {
+            if (coal_ore < 60) return alert("Not enough Coal Ore (need 60)");
+            if (coins    < 8)  return alert("Not enough Coins (need 8)");
+            coal_ore -= 60;
+            coins    -= 8;
+            coal_lantern = true;
+            document.getElementById("lanterB").classList.add("bought");
+            // If already in mine, spawn the bonus ores immediately
+            if (inMine) { for (let i = 0; i < 3; i++) coal_ore_spawn(); }
+
+        } else if (n === "Unlock Copper Mine") {
+            if (coal_ore < 3500) return alert("Not enough Coal Ore (need 3500)");
+            if (coins    < 150)  return alert("Not enough Coins (need 150)");
+            coal_ore      -= 3500;
+            coins         -= 150;
+            copper_mine_b  = true;
+
+        // ── Copper Shop ───────────────────────────────────────────
+        } else if (n === "Copper Pickaxe") {
+            if (copper_ore  < 150) return alert("Not enough Copper Ore (need 150)");
+            if (coal_ore < 100) return alert("Not enough Coal Ore (need 150)");
+            if (gunpowder < 20) return alert("Not enough Gunpowser (need 20)");
+            if (handle < 1) return alert("Missing Copper Handle");
+            if (coins       < 40)  return alert("Not enough Coins (need 40)");
+            copper_ore    -= 150;
+            coal_ore      -= 100;
+            gunpowder      -= 20;
+            handle          -= 1;
+            coins          -= 40;
+            copper_pickaxe_owned = true;
+            currentPickaxe = 'copper';
+            document.getElementById("copperPi").classList.add("bought");
+
+        } else if (n === "Copper Drill") {
+            if (copper_ore < 300) return alert("Not enough Copper Ore (need 300)");
+            if (coins      < 80)  return alert("Not enough Coins (need 80)");
+            copper_ore  -= 300;
+            coins       -= 80;
+            copper_drill_interval = setInterval(() => {
+                copper_ore += 1;
+                if (inCopperMine) updateCopperMineUI(); else updateUI();
+            }, 1000);
+
+        } else if (n === "Copper Potion") {
+            if (copper_ore < 120) return alert("Not enough Copper Ore (need 120)");
+            if (coins      < 30)  return alert("Not enough Coins (need 30)");
+            copper_ore -= 120;
+            coins      -= 30;
+            copper_potion_active = true;
+            clearTimeout(copper_potion_timer);
+            copper_potion_timer = setTimeout(() => {
+                copper_potion_active = false;
+            }, 5 * 60 * 1000);
+
+        } else if (n === "Copper Shell") {
+            if (copper_ore < 200) return alert("Not enough Copper Ore (need 200)");
+            if (coins      < 15)  return alert("Not enough Coins (need 15)");
+            copper_ore    -= 200;
+            coins         -= 15;
+            copper_shells += 5;
+
+        } else if (n === "Copper Lantern") {
+            if (copper_ore < 100) return alert("Not enough Copper Ore (need 100)");
+            if (coins      < 12)  return alert("Not enough Coins (need 12)");
+            copper_ore -= 100;
+            coins      -= 12;
+            copper_lantern = true;
+            document.getElementById("copperLant").classList.add("bought");
+            if (inCopperMine) { for (let i = 0; i < 3; i++) copper_ore_spawn(); }
+
+        } else if (n === "Unlock Quartz Mine") {
+            if (copper_ore < 5000) return alert("Not enough Copper Ore (need 5000)");
+            if (coins      < 300)  return alert("Not enough Coins (need 300)");
+            copper_ore    -= 5000;
+            coins         -= 300;
+            quartz_mine_b  = true;
+            document.getElementById("unlockQuartz").classList.add("bought");
+        }
+
+        close_purchase_menu();
+        updateUI();
+        mainUI();
+    }
+
+    // ── Copper mine ───────────────────────────────────────────────
+    function enter_copper() {
+        document.getElementById("screen1").style.display = "none";
+        document.getElementById("copper-mine").style.display = "flex";
+        inCopperMine = true;
+
+        copperPlayerX = window.innerWidth  / 2;
+        copperPlayerY = window.innerHeight / 2;
+        renderCopperPlayer();
+        const baseCount = copper_lantern ? 8 : 5;
+        for (let i = 0; i < baseCount; i++) copper_ore_spawn();
+        updateCopperMineUI();
+        startCopperMineLoop();
+    }
+
+    function copper_ore_spawn() {
+        const gc = document.createElement("div");
+        gc.dataset.ore = "copper";
+        const minX = BOUNDS.left   + 64;
+        const maxX = BOUNDS.right  - 64;
+        const minY = BOUNDS.top    + 64;
+        const maxY = BOUNDS.bottom - 64;
+        gc.style.cssText = `
+            position: absolute;
+            width: 128px;
+            height: 128px;
+            left: ${minX + Math.random() * Math.max(0, maxX - minX)}px;
+            top:  ${minY + Math.random() * Math.max(0, maxY - minY)}px;
+            background-image: url('https://res.cloudinary.com/dhpahuvxs/image/upload/v1777423806/New_Piskel-1.png_mepm0o_1_ex62rc.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            border-radius: 18px;
+            pointer-events: none;
+            user-select: none;
+            filter: brightness(50%);
+        `;
+        document.getElementById("copper-ore-container").appendChild(gc);
+        return gc;
+    }
+
+    function return_copper() {
+        stopCopperMineLoop();
+        stopCopperMining();
+        document.getElementById("copper-ore-container").innerHTML = "";
+        document.getElementById("screen1").style.display = "flex";
+        document.getElementById("copper-mine").style.display = "none";
+        inCopperMine = false;
+        updateUI();
+    }
+
+    function startCopperMineLoop() {
+        if (copperMineLoop) return;
+        copperMineLoop = setInterval(copperGameTick, 1000 / 60);
+    }
+    function stopCopperMineLoop() {
+        clearInterval(copperMineLoop);
+        copperMineLoop = null;
+    }
+    function startQuartzMineLoop() {
+        if (quartzMineLoop) return;
+        quartzMineLoop = setInterval(quartzGameTick, 1000 / 60);
+    }
+
+    function copperGameTick() {
+        let dx = 0, dy = 0;
+        if (keys['KeyW'] || keys['ArrowUp'])    dy -= PLAYER_SPEED;
+        if (keys['KeyS'] || keys['ArrowDown'])  dy += PLAYER_SPEED;
+        if (keys['KeyA'] || keys['ArrowLeft'])  dx -= PLAYER_SPEED;
+        if (keys['KeyD'] || keys['ArrowRight']) dx += PLAYER_SPEED;
+
+        // Apply + clamp to bounds (always viewport-relative)
+        copperPlayerX = Math.min(BOUNDS.right,  Math.max(BOUNDS.left, copperPlayerX + dx));
+        copperPlayerY = Math.min(BOUNDS.bottom, Math.max(BOUNDS.top,  copperPlayerY + dy));
+        renderCopperPlayer();
+
+        if (keys['Space']) {
+            const target = nearestCopperOre();
+            if (target && !copperMiningTarget) startCopperMining(target);
+        } else {
+            if (copperMiningTarget) stopCopperMining();
+        }
+    }
+    function quartzGameTick() {
+        let dx = 0, dy = 0;
+        if (keys['KeyW'] || keys['ArrowUp'])    dy -= PLAYER_SPEED;
+        if (keys['KeyS'] || keys['ArrowDown'])  dy += PLAYER_SPEED;
+        if (keys['KeyA'] || keys['ArrowLeft'])  dx -= PLAYER_SPEED;
+        if (keys['KeyD'] || keys['ArrowRight']) dx += PLAYER_SPEED;
+
+        // Apply + clamp to bounds (always viewport-relative)
+        quartzPlayerX = Math.min(BOUNDS.right,  Math.max(BOUNDS.left, quartzPlayerX + dx));
+        quartzPlayerY = Math.min(BOUNDS.bottom, Math.max(BOUNDS.top,  quartzPlayerY + dy));
+        renderQuartzPlayer();
+
+        if (keys['Space']) {
+            const target = nearestCopperOre();
+            if (target && !copperMiningTarget) startCopperMining(target);
+        } else {
+            if (copperMiningTarget) stopCopperMining();
+        }
+    }
+
+    function renderCopperPlayer() {
+        const p = document.getElementById("copper-player");
+        p.style.left = copperPlayerX + "px";
+        p.style.top  = copperPlayerY + "px";
+    }
+    function renderQuartzPlayer() {
+        const p = document.getElementById("quartz-player");
+        p.style.left = quartzPlayerX + "px";
+        p.style.top  = quartzPlayerY + "px";
+    }
+
+    function nearestCopperOre() {
+        const ores = document.querySelectorAll("#copper-ore-container div[data-ore]");
+        let closest = null, 
+            closestDist = Infinity;
+
+        for (const ore of ores) {
+            // Get the real-time position and size of the ore
+            const rect = ore.getBoundingClientRect();
+            
+            // Calculate the center point based on the element's actual size
+            const cx = rect.left + (rect.width / 2);
+            const cy = rect.top + (rect.height / 2);
+
+            // Distance formula (Pythagorean theorem)
+            const dist = Math.hypot(copperPlayerX - cx, copperPlayerY - cy);
+
+            if (dist < MINE_RANGE && dist < closestDist) {
+                closest = ore;
+                closestDist = dist;
+            }
+        }
+        return closest;
+    }
+
+
+
+    function startCopperMining(ore) {
+        copperMiningTarget = ore;
+        copperMiningProgress = 0;
+        document.getElementById("copper-mining-bar-wrap").style.display = "block";
+        document.getElementById("copper-mining-label").style.display    = "block";
+
+        const tier = PICKAXE_TIERS[currentPickaxe] || PICKAXE_TIERS['none'];
+        const totalTime = tier.mineTimeMs;
+        const tickMs = 50;
+
+        copperMiningInterval = setInterval(() => {
+            if (!keys['Space']) { stopCopperMining(); return; }
+            const target = nearestCopperOre();
+            if (target !== copperMiningTarget) { stopCopperMining(); return; }
+
+            copperMiningProgress += tickMs;
+            const pct = Math.min(100, (copperMiningProgress / totalTime) * 100);
+            document.getElementById("copper-mining-bar").style.width = pct + "%";
+
+            if (Math.random() < 0.6) {
+                const oreCx = parseFloat(ore.style.left) + 64;
+                const oreCy = parseFloat(ore.style.top)  + 64;
+                emitCopperSpark(oreCx, oreCy);
+            }
+
+            if (copperMiningProgress >= totalTime) {
+                finishCopperMining(ore, tier);
+            }
+        }, tickMs);
+    }
+
+    function stopCopperMining() {
+        clearInterval(copperMiningInterval);
+        copperMiningInterval = null;
+        copperMiningTarget   = null;
+        copperMiningProgress = 0;
+        document.getElementById("copper-mining-bar-wrap").style.display = "none";
+        document.getElementById("copper-mining-label").style.display    = "none";
+        document.getElementById("copper-mining-bar").style.width = "0%";
+    }
+
+    function finishCopperMining(ore, tier) {
+        let gained = ((Math.random() * (8 - 4) + 4) * tier.yieldMulti);
+        if (copper_potion_active) gained *= 2;
+        copper_ore += gained;
+        const oreCx = parseFloat(ore.style.left) + 64;
+        const oreCy = parseFloat(ore.style.top)  + 64;
+        ore.remove();
+        stopCopperMining();
+        launchCopperChunks(oreCx, oreCy, Math.round(gained));
+        copper_ore_spawn();
+        updateCopperMineUI();
+    }
+
+    function emitCopperSpark(cx, cy) {
+        const layer = document.getElementById("copper-particle-layer");
+        const s = document.createElement("div");
+        s.className = "copper-spark";
+        const ox = (Math.random() - 0.5) * 30;
+        const oy = (Math.random() - 0.5) * 30;
+        s.style.left = (cx + ox) + "px";
+        s.style.top  = (cy + oy) + "px";
+        layer.appendChild(s);
+
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 40 + Math.random() * 80;
+        const life  = 300 + Math.random() * 300;
+        const vx = Math.cos(angle) * speed;
+        const vy = Math.sin(angle) * speed - 60;
+        const start = performance.now();
+
+        function step(now) {
+            const t    = (now - start) / 1000;
+            const frac = (now - start) / life;
+            if (frac >= 1) { s.remove(); return; }
+            s.style.left      = (cx + ox + vx * t) + "px";
+            s.style.top       = (cy + oy + vy * t + 120 * t * t) + "px";
+            s.style.opacity   = (1 - frac);
+            s.style.transform = `rotate(${frac * 360}deg)`;
+            requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+    }
+
+    function launchCopperChunks(fromX, fromY, count) {
+        const layer   = document.getElementById("copper-particle-layer");
+        // Target: the actual on-screen position of the title element — works on any screen size
+        const titleRect = document.getElementById("title").getBoundingClientRect();
+        const targetX = titleRect.right - titleRect.width * 0.1;
+        const targetY = titleRect.top + titleRect.height * 0.2;
+        const numChunks = Math.min(count + 3, 10);
+        for (let i = 0; i < numChunks; i++) {
+            (function(delay) {
+                setTimeout(() => {
+                    const chunk = document.createElement("div");
+                    chunk.className = "copper-chunk";
+                    const sx = fromX + (Math.random() - 0.5) * 60;
+                    const sy = fromY + (Math.random() - 0.5) * 60;
+                    chunk.style.left = sx + "px";
+                    chunk.style.top  = sy + "px";
+                    layer.appendChild(chunk);
+
+                    const mx = (sx + targetX) / 2 + (Math.random() - 0.5) * 100;
+                    const my = Math.min(sy, targetY) - 80 - Math.random() * 120;
+                    const duration = 500 + Math.random() * 200;
+                    const start = performance.now();
+
+                    function fly(now) {
+                        const t  = Math.min((now - start) / duration, 1);
+                        const it = 1 - t;
+                        const bx = it*it*sx + 2*it*t*mx + t*t*targetX;
+                        const by = it*it*sy + 2*it*t*my + t*t*targetY;
+                        chunk.style.left      = bx + "px";
+                        chunk.style.top       = by + "px";
+                        chunk.style.opacity   = t < 0.85 ? 1 : (1 - t) / 0.15;
+                        chunk.style.transform = `rotate(${t * 540}deg) scale(${1 - t * 0.4})`;
+                        if (t >= 1) { chunk.remove(); return; }
+                        requestAnimationFrame(fly);
+                    }
+                    requestAnimationFrame(fly);
+                }, delay);
+            })(i * 60 + Math.random() * 40);
+        }
+    }
+let inQuartzMine = false;
+let quartzPlayerX = 200, quartzPlayerY = 300;
+let quartzMineLoop = null;
+let quartzMiningTarget = null;
+let quartzMiningProgress = 0;
+let quartzMiningInterval = null;
+
+function enter_quartz() {
+    document.getElementById("screen1").style.display = "none";
+    document.getElementById("quartz-mine").style.display = "flex";
+    inQuartzMine = true;
+    quartzPlayerX = window.innerWidth  / 2;
+    quartzPlayerY = window.innerHeight / 2;
+    renderQuartzPlayer();
+    // TODO: spawn ores
+    // TODO: update UI
+    // TODO: start game loop
+}
+
+function return_quartz() {
+    // TODO: stop quartz mine loop
+    // TODO: stop mining
+    document.getElementById("quartz-mine").style.display = "none";
+    document.getElementById("screen1").style.display = "flex";
+    inQuartzMine = false;
+    // TODO: update UI
+}
+
+
+    // ── Init ──────────────────────────────────────────────────────
+
+    loadGame();
+    updateUI();
+    mainUI();
+
+    // Reset button (bottom-left corner)
+    (function() {
+        const btn = document.createElement("button");
+        btn.textContent = "🗑 Reset Save";
+        btn.onclick = resetGame;
+        btn.style.cssText = "position:fixed;bottom:12px;left:12px;z-index:9999;background:rgba(0,0,0,0.6);color:#888;border:1px solid #444;border-radius:6px;padding:6px 12px;font-size:0.75rem;cursor:pointer;font-family:'Black Ops One',system-ui;";
+        btn.onmouseenter = () => btn.style.color = "#fff";
+        btn.onmouseleave = () => btn.style.color = "#888";
+        document.body.appendChild(btn);
+    })();
+</script>
+</body>
+</html>
